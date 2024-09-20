@@ -1,0 +1,19 @@
+{
+    "dependencies": {
+        "axios": "^1.7.7",
+        "node-cron": "^3.0.3",
+        "nodemon": "^3.1.6",
+        "puppeteer": "^23.4.0"
+    },
+    "name": "scrapping-proj",
+    "version": "1.0.0",
+    "main": "index.js",
+    "scripts": {
+        "start": "nodemon scripts/cdsco/scrapper/index.js",
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "description": ""
+}
