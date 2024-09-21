@@ -1,15 +1,26 @@
 const menuItems = [
     // {
     //     name: "About Us",
-    //     link: "/opencms/opencms/en/About-us/",type:"type1",
+    //     link: "/opencms/opencms/en/About-us/",
+    //     type: "type1",
     //     submenus: [
     //         {
     //             name: "Central Drug Testing Laboratories",
     //             link: "/opencms/opencms/en/About-us/Laboratories/",
+    //             pageType: "type1",
     //         },
-    //         { name: "Functions", link: "/opencms/opencms/en/About-us/Functions/" },
-    //         { name: "Introduction", link: "/opencms/opencms/en/About-us/Introduction/" },
-    //         { name: "Seniority List", link: "/opencms/opencms/en/About-us/Seniority-List/" },
+    //         {
+    //             name: "Functions",
+    //             link: "/opencms/opencms/en/About-us/Functions/",
+    //             pageType: "type1",
+    //             heading: "Functions of CDSCO",
+    //         },
+    //         {
+    //             name: "Introduction",
+    //             link: "/opencms/opencms/en/About-us/Introduction/",
+    //             pageType: "type1",
+    //             heading: "The organization chart",
+    //         },
     //     ],
     // },
     // {
@@ -102,12 +113,6 @@ const menuItems = [
     //             link: "/opencms/opencms/en/Clinical-Trial/Global-Clinical-Trial/",
     //             tableType: "typeA",
     //             pageType: "typeA",
-    //         },
-    //         {
-    //             name: "Serious Adverse Event",
-    //             link: "/opencms/opencms/en/Clinical-Trial/SAE/",
-    //             tableType: "typeG",
-    //             pageType: "typeB",
     //         },
     //     ],
     // },
@@ -354,15 +359,39 @@ const menuItems = [
     //         },
     //     ],
     // },
-    {
-        name: "PRO",
-        link: "/opencms/opencms/en/PRO/",
-        type: "type6",
-    },
+    // {
+    //     name: "PRO",
+    //     link: "/opencms/opencms/en/PRO/",
+    //     type: "type6",
+    // },
     // {
     //     name: "PSUR/PV/AEFI",
-    //     link: "/opencms/opencms/en/PSUR_PV_AEFI/",type:"type3",
+    //     link: "/opencms/opencms/en/PSUR_PV_AEFI/",
+    //     type: "type5",
     // },
+    // {
+    //     name: "Clinical Trial <--> Ethics Committee <--> Re-Registered Ethics Committees",
+    //     link: "/opencms/opencms/en/Clinical-Trial/Ethics-Committee/Ethics-Committee-Re-Registration/",
+    //     type: "type4",
+    //     tableType: "typeF",
+    // },
+    // {
+    //     name: "Clinical Trial <--> Ethics Committee <--> Registered Ethics Committees",
+    //     link: "/opencms/opencms/en/Clinical-Trial/Ethics-Committee/Ethics-Committee-Registration/",
+    //     type: "type4",
+    //     tableType: "typeF",
+    // },
+    // {
+    //     name: "Clinical Trial <--> Serious Adverse Event",
+    //     link: "/opencms/opencms/en/Clinical-Trial/SAE/",
+    //     type: "type7",
+    // },
+    {
+        name: "About Us <--> Seniority List",
+        link: "/opencms/opencms/en/About-us/Seniority-List/",
+        type: "type4",
+        tableType: "typeA",
+    },
 ];
 
 module.exports = menuItems;
