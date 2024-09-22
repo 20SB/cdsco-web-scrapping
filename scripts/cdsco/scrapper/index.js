@@ -2,12 +2,15 @@ const { startBrowser } = require("./utils/browser");
 const { mainUrl, menuItems } = require("./config/urls");
 const {
     scrapeExtraSingleLinks,
-    scrapePDFLinks_TypeA,
     scrapeType1Page,
     scrapeType2Page,
     scrapeType3Page,
     scrapeType5Page,
+    scrapeType6Page,
 } = require("./handlers/scrapeHandler");
+const { processPDFQueue } = require("./handlers/downloadPdf");
+const cron = require("node-cron");
+const { savePDFLink } = require("./handlers/pdfHandler");
 
 async function scrapeAllMenuItems() {
     try {
@@ -30,13 +33,13 @@ async function scrapeAllMenuItems() {
                     const tagString = `${menuItem.name} <--> ${submenu.name}`;
                     let submenuLinks = [];
 
-                    // Call function to scrape extra PDF links
-                    const extraPdfLinks = await scrapeExtraSingleLinks(page, tagString);
-                    allPDFLinks = allPDFLinks.concat(extraPdfLinks);
-
                     // call function to scrape page Type 1 data
                     submenuLinks = await scrapeType1Page(page, tagString, submenu);
                     allPDFLinks = allPDFLinks.concat(submenuLinks);
+
+                    // Call function to scrape extra PDF links
+                    const extraPdfLinks = await scrapeExtraSingleLinks(page, tagString);
+                    allPDFLinks = allPDFLinks.concat(extraPdfLinks);
                 }
             } else if (menuItem.type == "type2") {
                 for (const submenu of menuItem.submenus) {
@@ -72,7 +75,7 @@ async function scrapeAllMenuItems() {
                     const tagString = `${menuItem.name} <--> ${submenu.name}`;
                     let submenuLinks = [];
 
-                    // call function to scrape page Type 2 data
+                    // call function to scrape page Type 3 data
                     submenuLinks = await scrapeType3Page(page, tagString, submenu);
                     allPDFLinks = allPDFLinks.concat(submenuLinks);
                     console.log("pdf count: ", submenuLinks.length);
@@ -93,15 +96,15 @@ async function scrapeAllMenuItems() {
                 const tagString = `${menuItem.name}`;
                 let menuLinks = [];
 
+                // call function to scrape page Type 2 data as its similar to type 4
+                menuLinks = await scrapeType2Page(page, tagString, menuItem.tableType);
+                allPDFLinks = allPDFLinks.concat(menuLinks);
+                console.log("pdf count: ", menuLinks.length);
+
                 // Call function to scrape extra PDF links
                 const extraPdfLinks = await scrapeExtraSingleLinks(page, tagString);
                 allPDFLinks = allPDFLinks.concat(extraPdfLinks);
                 console.log("Extra pdf count: ", extraPdfLinks.length);
-
-                // call function to scrape page Type 2 data
-                menuLinks = await scrapeType2Page(page, tagString, menuItem.tableType);
-                allPDFLinks = allPDFLinks.concat(menuLinks);
-                console.log("pdf count: ", menuLinks.length);
             } else if (menuItem.type == "type5") {
                 // Goto the submenu page url
                 await page.goto(`${mainUrl}${menuItem.link}`, {
@@ -121,6 +124,65 @@ async function scrapeAllMenuItems() {
                 const extraPdfLinks = await scrapeExtraSingleLinks(page, tagString);
                 allPDFLinks = allPDFLinks.concat(extraPdfLinks);
                 console.log("Extra pdf count: ", extraPdfLinks.length);
+            } else if (menuItem.type == "type6") {
+                // Goto the submenu page url
+                await page.goto(`${mainUrl}${menuItem.link}`, {
+                    waitUntil: "networkidle2",
+                    timeout: 10000,
+                });
+
+                console.log(`Scraping PDFs from menu: ${menuItem.name}`);
+                const tagString = `${menuItem.name}`;
+                let menuLinks = [];
+
+                // call function to scrape page Type 2 data as its similar to type 6
+                menuLinks = await scrapeType6Page(page, tagString);
+                allPDFLinks = allPDFLinks.concat(menuLinks);
+                console.log("pdf count: ", menuLinks.length);
+
+                // Call function to scrape extra PDF links
+                const extraPdfLinks = await scrapeExtraSingleLinks(page, tagString);
+                allPDFLinks = allPDFLinks.concat(extraPdfLinks);
+                console.log("Extra pdf count: ", extraPdfLinks.length);
+            } else if (menuItem.type == "type7") {
+                await page.goto(`${mainUrl}${menuItem.link}`, {
+                    waitUntil: "networkidle2",
+                    timeout: 10000,
+                });
+
+                console.log(`Scraping PDFs from menu: ${menuItem.name}`);
+                const tagString = `${menuItem.name}`;
+                let menuLinks = [];
+
+                // Scrape pdfs from lists
+                menuLinks = await page.evaluate((tagString) => {
+                    console.log("inside  page.evaluate");
+
+                    // Function to collect PDF links and titles from list items
+                    const collectPdfLinks = (tagString) => {
+                        const items = document.querySelectorAll(
+                            'li a[href*="download_file_division.jsp"]'
+                        );
+                        return Array.from(items).map((item) => {
+                            const pdfUrl = item.href;
+                            const title = item.querySelector("span.font_black")?.innerText.trim();
+                            return { title, pdfUrl, tagString };
+                        });
+                    };
+
+                    return collectPdfLinks(tagString);
+                }, tagString);
+
+                allPDFLinks = allPDFLinks.concat(menuLinks);
+                console.log("pdf count: ", menuLinks.length);
+
+                // Save each PDF link individually
+                menuLinks.forEach((pdfLink) => savePDFLink(pdfLink, tagString));
+
+                // Call function to scrape extra PDF links
+                const extraPdfLinks = await scrapeExtraSingleLinks(page, tagString);
+                allPDFLinks = allPDFLinks.concat(extraPdfLinks);
+                console.log("Extra pdf count: ", extraPdfLinks.length);
             }
         }
 
@@ -132,12 +194,26 @@ async function scrapeAllMenuItems() {
     }
 }
 
-(async () => {
+// Start processing the PDF download queue
+processPDFQueue();
+
+// Schedule the scraping job to run every 7 days
+cron.schedule("0 0 * * 0", async () => {
+    console.log("Running weekly scrape...");
     try {
         const pdfLinks = await scrapeAllMenuItems();
-        // console.log("pdfLinks", pdfLinks);
         console.log(`Found ${pdfLinks.length} PDF links.`);
     } catch (error) {
         console.error("Error during scraping: ", error);
+    }
+});
+
+// Initial scraping run
+(async () => {
+    try {
+        const pdfLinks = await scrapeAllMenuItems();
+        console.log(`Found ${pdfLinks.length} PDF links.`);
+    } catch (error) {
+        console.error("Error during initial scraping: ", error);
     }
 })();

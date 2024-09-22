@@ -1,6 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 const { ObjectId } = require("mongodb");
+const { queuePDFDownload } = require("./downloadPdf");
 
 const metadataFilePath = path.resolve(
     __dirname,
@@ -18,6 +19,9 @@ if (fs.existsSync(metadataFilePath)) {
 function savePDFLink(pdfLink, tagString) {
     const existingData = metadata[pdfLink.pdfUrl];
     let updateRequired = false;
+
+    // Define the directory path at the start of the function
+    const dirPath = path.resolve(__dirname, "../../../../temp_files/cdsco/json");
 
     // Check if the PDF link already exists in the in-memory hashmap
     if (existingData) {
@@ -52,7 +56,6 @@ function savePDFLink(pdfLink, tagString) {
     } else {
         // Generate a unique ID for the PDF link if it doesn't exist
         const id = existingData ? existingData.id : new ObjectId().toString();
-        const dirPath = path.resolve(__dirname, "../../../../temp_files/cdsco/json");
 
         if (!fs.existsSync(dirPath)) {
             fs.mkdirSync(dirPath, { recursive: true });
@@ -61,10 +64,16 @@ function savePDFLink(pdfLink, tagString) {
         const fileName = `${tagString.replace(/[^a-z0-9]+/gi, "-").toLowerCase()}-${id}.json`;
         const filePath = path.join(dirPath, fileName);
 
-        pdfDataWithId = { ...pdfLink, id, jsonFileName: fileName };
+        pdfDataWithId = { ...pdfLink, id };
 
         // Write the new PDF data if not updating
         fs.writeFileSync(filePath, JSON.stringify(pdfDataWithId, null, 2));
+
+        // Modify pdfData to include the file path for hashmap
+        pdfDataWithId = { ...pdfDataWithId, jsonFileName: fileName };
+
+        // Add it to queue to be downloaded
+        queuePDFDownload(pdfLink.pdfUrl, pdfDataWithId.jsonFileName);
     }
 
     // Add or update the PDF link in the in-memory hashmap

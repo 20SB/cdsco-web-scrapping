@@ -2,21 +2,20 @@ const puppeteer = require("puppeteer");
 const { delay } = require("./delay");
 const { savePDFLink } = require("../handlers/pdfHandler");
 
-async function helperType3A(page, tagString, submenu, button, counter) {
+async function helperType3A(page, tagString, button, counter) {
     try {
         const subSubmenuTagString = `${tagString} <--> ${button.name}`;
 
         let pdfData = [];
         let previousEndingCount = 0;
         let hasNextPage = true;
-        const tableType = submenu.tableType;
 
         // Loop Until there is no next page
         while (hasNextPage) {
             let pageData;
             try {
                 pageData = await page.evaluate(
-                    (subSubmenuTagString, previousEndingCount, tableType, counter) => {
+                    (subSubmenuTagString, previousEndingCount, counter) => {
                         let a1,
                             b1 = counter + 1;
                         if (counter == 0) {
@@ -79,7 +78,6 @@ async function helperType3A(page, tagString, submenu, button, counter) {
                     },
                     subSubmenuTagString,
                     previousEndingCount,
-                    tableType,
                     counter
                 );
             } catch (error) {
@@ -224,6 +222,112 @@ async function helperType5A(page, tagString) {
     }
 }
 
+async function helperType6A(page, tagString, button, counter) {
+    const subSubmenuTagString = `${tagString} <--> ${button.name}`;
+
+    let pdfData = [];
+    let previousEndingCount = 0;
+    let hasNextPage = true;
+
+    while (hasNextPage) {
+        let pageData;
+        try {
+            pageData = await page.evaluate(
+                (subSubmenuTagString, previousEndingCount, counter) => {
+                    let a1,
+                        b1 = counter + 1;
+                    if (counter == 0) {
+                        a1 = "";
+                    } else {
+                        a1 = counter;
+                    }
+
+                    const tab = document.getElementById(`tab${b1}`);
+                    if (!tab) throw new Error(`Tab with id 'tab${b1}' not found.`);
+
+                    function scrapeTableRows(subSubmenuTagString, tab) {
+                        const rows = Array.from(tab.querySelectorAll(`table tbody tr`));
+                        return rows
+                            .map((row) => {
+                                const title = row
+                                    ?.querySelector("td:nth-child(2)")
+                                    ?.innerText.trim();
+                                const linkElement = row?.querySelector("td:nth-child(4) a");
+                                const pdfUrl = linkElement ? linkElement.href : "";
+                                return { title, pdfUrl, subSubmenuTagString };
+                            })
+                            .filter((item) => item.pdfUrl);
+                    }
+
+                    const pageInfo = tab.querySelector(".dt-info")?.innerText;
+
+                    if (!pageInfo) {
+                        const data = scrapeTableRows(subSubmenuTagString, tab);
+                        return { data, hasNextPage: false, endingCount: 0 };
+                    }
+
+                    const cleanedPageInfo = pageInfo.replace(/,/g, "");
+                    const match = cleanedPageInfo.match(/(\d+)/g);
+                    if (!match) {
+                        console.error("Failed to parse pagination info:", pageInfo);
+                        return {
+                            data: [],
+                            hasNextPage: false,
+                            endingCount: previousEndingCount,
+                        };
+                    }
+
+                    const [startingCount, endingCount, totalEntries] = match.map(Number);
+
+                    if (endingCount === previousEndingCount) {
+                        return {
+                            data: [],
+                            hasNextPage: endingCount !== 0,
+                            endingCount,
+                        };
+                    }
+
+                    const data = scrapeTableRows(subSubmenuTagString, tab);
+                    return {
+                        data,
+                        hasNextPage: endingCount < totalEntries,
+                        endingCount,
+                    };
+                },
+                subSubmenuTagString,
+                previousEndingCount,
+                counter
+            );
+        } catch (error) {
+            console.error("Error evaluating page:", error);
+            hasNextPage = false; // Stop the loop on error
+            continue; // Optionally continue to the next iteration
+        }
+
+        previousEndingCount = pageData.endingCount;
+        pdfData = pdfData.concat(pageData.data);
+        hasNextPage = pageData.hasNextPage;
+
+        // console.log("counter before next btn:", counter);
+        if (hasNextPage) {
+            await page.evaluate((counter) => {
+                const tab = document.getElementById(`tab${counter + 1}`);
+                if (!tab) throw new Error(`Tab with id 'tab${counter + 1}' not found.`);
+                const element = tab.getElementsByClassName("next");
+                if (element.length > 0) {
+                    element[0].click();
+                }
+            }, counter);
+
+            // Adding a delay to avoid race conditions
+            await delay(1000);
+        }
+    }
+
+    submenuLinksForButton = pdfData;
+    console.log(`PDF count for ${button.name}: ${submenuLinksForButton.length}`);
+}
+
 // Extranct from anchor tags
 async function helperScrapeAnchor(page, tagString) {
     try {
@@ -251,4 +355,4 @@ async function helperScrapeAnchor(page, tagString) {
         return [];
     }
 }
-module.exports = { helperType3A, helperType5A, helperScrapeAnchor };
+module.exports = { helperType3A, helperType5A, helperType6A, helperScrapeAnchor };

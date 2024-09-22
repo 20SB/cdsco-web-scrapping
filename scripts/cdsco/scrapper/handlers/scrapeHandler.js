@@ -1,5 +1,10 @@
 const { delay } = require("../utils/delay");
-const { helperType3A, helperType5A, helperScrapeAnchor } = require("../utils/scrapeHelper");
+const {
+    helperType3A,
+    helperType5A,
+    helperScrapeAnchor,
+    helperType6A,
+} = require("../utils/scrapeHelper");
 const { savePDFLink } = require("./pdfHandler");
 
 // Function to scrape extra PDF links from a page
@@ -283,13 +288,7 @@ async function scrapeType3Page(page, tagString, submenu) {
                 // Adding a delay to ensure content loads after clicking
                 await delay(2000);
 
-                const submenuLinksForButton = await helperType3A(
-                    page,
-                    tagString,
-                    submenu,
-                    button,
-                    counter
-                );
+                const submenuLinksForButton = await helperType3A(page, tagString, button, counter);
                 counter++;
 
                 console.log(`PDF count for ${button.name}: ${submenuLinksForButton.length}`);
@@ -327,71 +326,47 @@ async function scrapeType5Page(page, tagString) {
     }
 }
 
-// Function to scrape PDF links from table type A
-async function scrapePDFLinks_TypeA(page, tagString) {
-    let pdfData = [];
-    let previousEndingCount = 0;
-    let hasNextPage = true;
+// Scrape page Type 6
+async function scrapeType6Page(page, tagString) {
+    try {
+        let allPDFLinks = [];
+        // Now, loop through each button in the tab menu
+        const tabButtons = await page.evaluate(() => {
+            const subSubMenuTab = document.getElementById("myTab");
 
-    while (hasNextPage) {
-        const pageData = await page.evaluate(
-            (tagString, previousEndingCount) => {
-                const scrapeTableRows = (tagString) => {
-                    const rows = Array.from(document.querySelectorAll("table#example tbody tr"));
-                    return rows
-                        .map((row) => {
-                            const title = row.querySelector("td:nth-child(2)")?.innerText.trim();
-                            const linkElement = row.querySelector("td:nth-child(4) a");
-                            const pdfUrl = linkElement ? linkElement.href : "";
-                            return { title, pdfUrl, tagString };
-                        })
-                        .filter((item) => item.pdfUrl);
-                };
-
-                const pageInfo = document.querySelector("#example_info")?.innerText;
-                if (!pageInfo) {
-                    return { data: scrapeTableRows(tagString), hasNextPage: false, endingCount: 0 };
-                }
-
-                const cleanedPageInfo = pageInfo.replace(/,/g, "");
-                const [startingCount, endingCount, totalEntries] = cleanedPageInfo
-                    .match(/(\d+)/g)
-                    .map(Number);
-
-                if (endingCount === previousEndingCount) {
-                    return { data: [], hasNextPage: endingCount !== 0, endingCount };
-                }
-
+            return Array.from(subSubMenuTab?.getElementsByTagName("button")).map((button) => {
                 return {
-                    data: scrapeTableRows(tagString),
-                    hasNextPage: endingCount < totalEntries,
-                    endingCount,
+                    id: button.id,
+                    name: button.innerText.trim(),
                 };
-            },
-            tagString,
-            previousEndingCount
-        );
-
-        previousEndingCount = pageData.endingCount;
-        pdfData = pdfData.concat(pageData.data);
-        hasNextPage = pageData.hasNextPage;
-
-        if (hasNextPage) {
-            await page.evaluate(() => {
-                const element = document.getElementsByClassName("next");
-                if (element.length > 0) {
-                    element[0].click();
-                }
             });
+        });
 
-            await delay(1000);
+        let counter = 0;
+        for (const button of tabButtons) {
+            console.log(`Clicking tab: ${button.name} with id ${button.id}`);
+
+            await page.evaluate((button) => {
+                const element = document.getElementById(button.id);
+                if (element) {
+                    element.click();
+                }
+            }, button);
+
+            // Adding a delay to ensure content loads after clicking
+            await delay(2000);
+
+            const submenuLinksForButton = await helperType3A(page, tagString, button, counter);
+            counter++;
+
+            allPDFLinks = allPDFLinks.concat(submenuLinksForButton);
         }
+        return allPDFLinks;
+    } catch (error) {
+        console.error(`Error scraping Type 6 page for ${tagString}:`, error);
+        return [];
     }
-
-    return pdfData;
 }
-
-// Other functions for different table types...
 
 module.exports = {
     scrapeExtraSingleLinks,
@@ -399,5 +374,5 @@ module.exports = {
     scrapeType2Page,
     scrapeType3Page,
     scrapeType5Page,
-    scrapePDFLinks_TypeA /* Export other functions */,
+    scrapeType6Page,
 };
