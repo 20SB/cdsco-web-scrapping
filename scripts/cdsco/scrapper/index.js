@@ -8,9 +8,9 @@ const {
     scrapeType5Page,
     scrapeType6Page,
 } = require("./handlers/scrapeHandler");
-const { processPDFQueue } = require("./handlers/downloadPdf");
+const { processPDFQueue, logDownloadCounts } = require("./handlers/downloadPdf");
 const cron = require("node-cron");
-const { savePDFLink } = require("./handlers/pdfHandler");
+const { savePDFLink, logScrapeCounts } = require("./handlers/pdfHandler");
 
 async function scrapeAllMenuItems() {
     try {
@@ -19,14 +19,14 @@ async function scrapeAllMenuItems() {
         let allPDFLinks = [];
 
         for (const menuItem of menuItems) {
-            console.log(`Scraping PDFs from: ${menuItem.name}`);
+            console.log(`Scraping PDFs from: ${menuItem.name} ***`);
 
             if (menuItem.type == "type1") {
                 for (const submenu of menuItem.submenus) {
                     // Goto the submenu page url
                     await page.goto(`${mainUrl}${submenu.link}`, {
                         waitUntil: "networkidle2",
-                        timeout: 10000,
+                        timeout: 60000,
                     });
 
                     console.log(`Scraping PDFs from submenu: ${submenu.name}`);
@@ -35,18 +35,20 @@ async function scrapeAllMenuItems() {
 
                     // call function to scrape page Type 1 data
                     submenuLinks = await scrapeType1Page(page, tagString, submenu);
-                    allPDFLinks = allPDFLinks.concat(submenuLinks);
+                    allPDFLinks = allPDFLinks.concat(allPDFLinks);
+                    console.log("pdf count: ", submenuLinks.length);
 
                     // Call function to scrape extra PDF links
                     const extraPdfLinks = await scrapeExtraSingleLinks(page, tagString);
                     allPDFLinks = allPDFLinks.concat(extraPdfLinks);
+                    console.log("pdf count: ", submenuLinks.length);
                 }
             } else if (menuItem.type == "type2") {
                 for (const submenu of menuItem.submenus) {
                     // Goto the submenu page url
                     await page.goto(`${mainUrl}${submenu.link}`, {
                         waitUntil: "networkidle2",
-                        timeout: 10000,
+                        timeout: 60000,
                     });
 
                     console.log(`Scraping PDFs from submenu: ${submenu.name}`);
@@ -68,7 +70,7 @@ async function scrapeAllMenuItems() {
                     // Goto the submenu page url
                     await page.goto(`${mainUrl}${submenu.link}`, {
                         waitUntil: "networkidle2",
-                        timeout: 10000,
+                        timeout: 60000,
                     });
 
                     console.log(`Scraping PDFs from submenu: ${submenu.name}`);
@@ -89,7 +91,7 @@ async function scrapeAllMenuItems() {
                 // Goto the submenu page url
                 await page.goto(`${mainUrl}${menuItem.link}`, {
                     waitUntil: "networkidle2",
-                    timeout: 10000,
+                    timeout: 60000,
                 });
 
                 console.log(`Scraping PDFs from menu: ${menuItem.name}`);
@@ -109,7 +111,7 @@ async function scrapeAllMenuItems() {
                 // Goto the submenu page url
                 await page.goto(`${mainUrl}${menuItem.link}`, {
                     waitUntil: "networkidle2",
-                    timeout: 10000,
+                    timeout: 60000,
                 });
 
                 console.log(`Scraping PDFs from menu: ${menuItem.name}`);
@@ -128,7 +130,7 @@ async function scrapeAllMenuItems() {
                 // Goto the submenu page url
                 await page.goto(`${mainUrl}${menuItem.link}`, {
                     waitUntil: "networkidle2",
-                    timeout: 10000,
+                    timeout: 60000,
                 });
 
                 console.log(`Scraping PDFs from menu: ${menuItem.name}`);
@@ -147,7 +149,7 @@ async function scrapeAllMenuItems() {
             } else if (menuItem.type == "type7") {
                 await page.goto(`${mainUrl}${menuItem.link}`, {
                     waitUntil: "networkidle2",
-                    timeout: 10000,
+                    timeout: 60000,
                 });
 
                 console.log(`Scraping PDFs from menu: ${menuItem.name}`);
@@ -156,8 +158,6 @@ async function scrapeAllMenuItems() {
 
                 // Scrape pdfs from lists
                 menuLinks = await page.evaluate((tagString) => {
-                    console.log("inside  page.evaluate");
-
                     // Function to collect PDF links and titles from list items
                     const collectPdfLinks = (tagString) => {
                         const items = document.querySelectorAll(
@@ -197,12 +197,13 @@ async function scrapeAllMenuItems() {
 // Start processing the PDF download queue
 processPDFQueue();
 
-// Schedule the scraping job to run every 7 days
-cron.schedule("0 0 * * 0", async () => {
+// Schedule the scraping job to run at 12 AM every day
+cron.schedule("0 0 * * *", async () => {
     console.log("Running weekly scrape...");
     try {
         const pdfLinks = await scrapeAllMenuItems();
-        console.log(`Found ${pdfLinks.length} PDF links.`);
+        console.log(`Total PDF count:`, pdfLinks.length);
+        logScrapeCounts();
     } catch (error) {
         console.error("Error during scraping: ", error);
     }
@@ -212,7 +213,8 @@ cron.schedule("0 0 * * 0", async () => {
 (async () => {
     try {
         const pdfLinks = await scrapeAllMenuItems();
-        console.log(`Found ${pdfLinks.length} PDF links.`);
+        console.log(`Total PDF count:`, pdfLinks.length);
+        logScrapeCounts();
     } catch (error) {
         console.error("Error during initial scraping: ", error);
     }

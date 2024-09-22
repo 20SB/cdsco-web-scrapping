@@ -1,89 +1,89 @@
 const menuItems = [
-    {
-        name: "About Us",
-        link: "/opencms/opencms/en/About-us/",
-        type: "type1",
-        submenus: [
-            {
-                name: "Central Drug Testing Laboratories",
-                link: "/opencms/opencms/en/About-us/Laboratories/",
-                pageType: "type1",
-            },
-            {
-                name: "Functions",
-                link: "/opencms/opencms/en/About-us/Functions/",
-                pageType: "type1",
-                heading: "Functions of CDSCO",
-            },
-            {
-                name: "Introduction",
-                link: "/opencms/opencms/en/About-us/Introduction/",
-                pageType: "type1",
-                heading: "The organization chart",
-            },
-        ],
-    },
     // {
-    //     name: "Act & Rules",
-    //     link: "/opencms/opencms/en/Acts-and-rules/",
-    //     type: "type2",
+    //     name: "About Us",
+    //     link: "/opencms/opencms/en/About-us/",
+    //     type: "type1",
     //     submenus: [
     //         {
-    //             name: "Drugs and Cosmetics Act, 1940",
-    //             link: "/opencms/opencms/en/Acts-and-rules/Drugs-and-Cosmetics-Act/",
-    //             pageType: "table1",
-    //             tableType: "typeA",
+    //             name: "Central Drug Testing Laboratories",
+    //             link: "/opencms/opencms/en/About-us/Laboratories/",
+    //             pageType: "type1",
     //         },
     //         {
-    //             name: "Drugs Rules, 1945",
-    //             link: "/opencms/opencms/en/Acts-and-rules/Drugs-Rules/",
-    //             pageType: "table1",
-    //             tableType: "typeA",
+    //             name: "Functions",
+    //             link: "/opencms/opencms/en/About-us/Functions/",
+    //             pageType: "type1",
+    //             heading: "Functions of CDSCO",
     //         },
     //         {
-    //             name: "Medical Devices Rules, 2017",
-    //             link: "/opencms/opencms/en/Acts-and-rules/Medical-Devices-Rules/",
-    //             pageType: "table1",
-    //             tableType: "typeA",
-    //         },
-    //         {
-    //             name: "New Drugs and Clinical Trials Rules, 2019",
-    //             link: "/opencms/opencms/en/Acts-and-rules/New-Drugs/",
-    //             pageType: "table1",
-    //             tableType: "typeA",
-    //         },
-    //         {
-    //             name: "Cosmetics Rules, 2020",
-    //             link: "/opencms/opencms/en/Acts-and-rules/Cosmetics-Rules/",
-    //             pageType: "table1",
-    //             tableType: "typeA",
-    //         },
-    //         {
-    //             name: "Advisories/Notices/O.Ms./Orders",
-    //             link: "/opencms/opencms/en/Acts-and-rules/Advisories_NO/",
-    //             pageType: "table1",
-    //             tableType: "typeA",
-    //         },
-    //         {
-    //             name: "Final Notifications",
-    //             link: "/opencms/opencms/en/Acts-and-rules/Final-Notifications/",
-    //             pageType: "table1",
-    //             tableType: "typeA",
-    //         },
-    //         {
-    //             name: "Draft Notifications",
-    //             link: "/opencms/opencms/en/Acts-and-rules/Draft-Notifications/",
-    //             pageType: "table1",
-    //             tableType: "typeA",
-    //         },
-    //         {
-    //             name: "Guidance documents",
-    //             link: "/opencms/opencms/en/Acts-and-rules/Guidance-documents/",
-    //             pageType: "table1",
-    //             tableType: "typeA",
+    //             name: "Introduction",
+    //             link: "/opencms/opencms/en/About-us/Introduction/",
+    //             pageType: "type1",
+    //             heading: "The organization chart",
     //         },
     //     ],
     // },
+    {
+        name: "Act & Rules",
+        link: "/opencms/opencms/en/Acts-and-rules/",
+        type: "type2",
+        submenus: [
+            {
+                name: "Drugs and Cosmetics Act, 1940",
+                link: "/opencms/opencms/en/Acts-and-rules/Drugs-and-Cosmetics-Act/",
+                pageType: "table1",
+                tableType: "typeA",
+            },
+            {
+                name: "Drugs Rules, 1945",
+                link: "/opencms/opencms/en/Acts-and-rules/Drugs-Rules/",
+                pageType: "table1",
+                tableType: "typeA",
+            },
+            {
+                name: "Medical Devices Rules, 2017",
+                link: "/opencms/opencms/en/Acts-and-rules/Medical-Devices-Rules/",
+                pageType: "table1",
+                tableType: "typeA",
+            },
+            {
+                name: "New Drugs and Clinical Trials Rules, 2019",
+                link: "/opencms/opencms/en/Acts-and-rules/New-Drugs/",
+                pageType: "table1",
+                tableType: "typeA",
+            },
+            // {
+            //     name: "Cosmetics Rules, 2020",
+            //     link: "/opencms/opencms/en/Acts-and-rules/Cosmetics-Rules/",
+            //     pageType: "table1",
+            //     tableType: "typeA",
+            // },
+            // {
+            //     name: "Advisories/Notices/O.Ms./Orders",
+            //     link: "/opencms/opencms/en/Acts-and-rules/Advisories_NO/",
+            //     pageType: "table1",
+            //     tableType: "typeA",
+            // },
+            // {
+            //     name: "Final Notifications",
+            //     link: "/opencms/opencms/en/Acts-and-rules/Final-Notifications/",
+            //     pageType: "table1",
+            //     tableType: "typeA",
+            // },
+            // {
+            //     name: "Draft Notifications",
+            //     link: "/opencms/opencms/en/Acts-and-rules/Draft-Notifications/",
+            //     pageType: "table1",
+            //     tableType: "typeA",
+            // },
+            // {
+            //     name: "Guidance documents",
+            //     link: "/opencms/opencms/en/Acts-and-rules/Guidance-documents/",
+            //     pageType: "table1",
+            //     tableType: "typeA",
+            // },
+        ],
+    },
     // {
     //     name: "BA/BE",
     //     link: "/opencms/opencms/en/bioequi_bioavail/",
@@ -223,7 +223,8 @@ const menuItems = [
     // },
     // {
     //     name: "Notifications",
-    //     link: "/opencms/opencms/en/Notifications/",type:"type2",
+    //     link: "/opencms/opencms/en/Notifications/",
+    //     type: "type2",
     //     submenus: [
     //         {
     //             name: "Recruitment & Rules",
@@ -301,7 +302,8 @@ const menuItems = [
     // },
     // {
     //     name: "Committees",
-    //     link: "/opencms/opencms/en/Committees/",type:"type2",
+    //     link: "/opencms/opencms/en/Committees/",
+    //     type: "type2",
     //     submenus: [
     //         {
     //             name: "ASR Committee",
@@ -382,15 +384,15 @@ const menuItems = [
     //     tableType: "typeF",
     // },
     // {
-    //     name: "Clinical Trial <--> Serious Adverse Event",
-    //     link: "/opencms/opencms/en/Clinical-Trial/SAE/",
-    //     type: "type7",
-    // },
-    // {
     //     name: "About Us <--> Seniority List",
     //     link: "/opencms/opencms/en/About-us/Seniority-List/",
     //     type: "type4",
     //     tableType: "typeA",
+    // },
+    // {
+    //     name: "Clinical Trial <--> Serious Adverse Event",
+    //     link: "/opencms/opencms/en/Clinical-Trial/SAE/",
+    //     type: "type7",
     // },
 ];
 

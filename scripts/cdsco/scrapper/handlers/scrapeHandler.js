@@ -275,7 +275,7 @@ async function scrapeType3Page(page, tagString, submenu) {
 
             // Now, loop through each button in the tab menu
             for (const button of tabButtons) {
-                console.log(`Clicking tab: ${button.name} with id ${button.id}`);
+                // console.log(`Clicking tab: ${button.name} with id ${button.id}`);
 
                 // Click the button
                 await page.evaluate((button) => {
@@ -291,13 +291,13 @@ async function scrapeType3Page(page, tagString, submenu) {
                 const submenuLinksForButton = await helperType3A(page, tagString, button, counter);
                 counter++;
 
-                console.log(`PDF count for ${button.name}: ${submenuLinksForButton.length}`);
+                // console.log("pdf count: ", submenuLinksForButton.length);
                 subMenuPDFLinks = subMenuPDFLinks.concat(submenuLinksForButton);
             }
         } else if (submenu.pageType == "typeB") {
             const submenuLinks = await scrapeType2Page(page, tagString, submenu.tableType);
             subMenuPDFLinks = subMenuPDFLinks.concat(submenuLinks);
-            console.log("pdf count: ", submenuLinks.length);
+            // console.log("pdf count: ", submenuLinks.length);
         }
         return subMenuPDFLinks;
     } catch (error) {
@@ -344,7 +344,7 @@ async function scrapeType6Page(page, tagString) {
 
         let counter = 0;
         for (const button of tabButtons) {
-            console.log(`Clicking tab: ${button.name} with id ${button.id}`);
+            // console.log(`Clicking tab: ${button.name} with id ${button.id}`);
 
             await page.evaluate((button) => {
                 const element = document.getElementById(button.id);

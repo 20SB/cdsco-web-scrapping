@@ -4,15 +4,32 @@ const fs = require("fs");
 const path = require("path");
 const { default: axios } = require("axios");
 
+// Log file path for saving logs
+const logDirPath = path.resolve(__dirname, "../../../../temp_files/cdsco/helper");
+const logFilePath = path.join(logDirPath, "logs.txt");
+
+// Function to log messages with timestamps
+function logMessage(message) {
+    const timestamp = new Date().toISOString();
+    const logEntry = `${timestamp} - ${message}\n`;
+
+    // Ensure that the log directory exists before writing to the log file
+    if (!fs.existsSync(logDirPath)) {
+        fs.mkdirSync(logDirPath, { recursive: true });
+    }
+
+    fs.appendFileSync(logFilePath, logEntry, "utf8");
+}
+
+// Queue function to download PDFs
 function queuePDFDownload(pdfUrl, jsonFileName) {
-    // Push the download request to a Redis queue
     redis
         .lpush("pdf_download_queue", JSON.stringify({ pdfUrl, jsonFileName }))
         .then(() => {
-            // console.log(`Queued PDF download: ${pdfUrl}`);
+            logMessage(`Queued PDF download: ${pdfUrl}`);
         })
         .catch((error) => {
-            console.error(`Error queuing PDF download: ${error.message}`);
+            logMessage(`Error queuing PDF download: ${error.message}`);
         });
 }
 
@@ -24,13 +41,12 @@ async function processPDFQueue() {
             const { pdfUrl, jsonFileName } = JSON.parse(item);
             downloadPDF(pdfUrl, jsonFileName);
         } else {
-            // Sleep for a bit before checking the queue again
             await new Promise((resolve) => setTimeout(resolve, 1000));
         }
     }
 }
 
-// Updated download function (same as above)
+// Function to download the PDF and log success or errors
 function downloadPDF(pdfUrl, jsonFileName) {
     const filePath = path.resolve(
         __dirname,
@@ -38,13 +54,11 @@ function downloadPDF(pdfUrl, jsonFileName) {
         jsonFileName.replace(".json", ".pdf")
     );
 
-    // Create the directory if it doesn't exist
     const dirPath = path.dirname(filePath);
     if (!fs.existsSync(dirPath)) {
         fs.mkdirSync(dirPath, { recursive: true });
     }
 
-    // Use axios to download the PDF
     axios({
         method: "get",
         url: pdfUrl,
@@ -52,10 +66,10 @@ function downloadPDF(pdfUrl, jsonFileName) {
     })
         .then((response) => {
             response.data.pipe(fs.createWriteStream(filePath));
-            // console.log(`Downloading PDF: ${pdfUrl} to ${filePath}`);
+            logMessage(`Downloaded PDF: ${pdfUrl} to ${filePath}`);
         })
         .catch((error) => {
-            console.error(`Error downloading PDF: ${error.message}`);
+            logMessage(`Error downloading PDF: ${pdfUrl}, Error: ${error.message}`);
         });
 }
 

@@ -325,7 +325,7 @@ async function helperType6A(page, tagString, button, counter) {
     }
 
     submenuLinksForButton = pdfData;
-    console.log(`PDF count for ${button.name}: ${submenuLinksForButton.length}`);
+    // console.log(`PDF count for ${button.name}: ${submenuLinksForButton.length}`);
 }
 
 // Extranct from anchor tags

@@ -11,7 +11,7 @@ async function startBrowser() {
             defaultViewport: null,
         });
     } catch (err) {
-        console.log("Could not create a browser instance => : ", err);
+        console.error("Could not create a browser instance => : ", err);
     }
     return browser;
 }
